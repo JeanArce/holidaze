@@ -1,16 +1,20 @@
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
+import styles from './header.styles.module.scss';
 
 const Header = () => {
     return (
-        <Navbar expand="lg" className="bg-body-tertiary">
-            <Container>
-                <Navbar.Brand href="#home">Holidaze</Navbar.Brand>
-                <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                <Navbar.Collapse id="basic-navbar-nav">
-                    <Nav className="me-auto">
-                        <Nav.Link href="/">Home</Nav.Link>
-                    
-                        {/* <NavDropdown title="Dropdown" id="basic-nav-dropdown">
+      <Navbar
+        expand="lg"
+        className={`${styles.headerContainer}`}
+      >
+        <Container>
+          <Navbar.Brand className={styles.navbarBrand} href="/">Holidaze</Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="me-auto">
+              <Nav.Link href="/">Home</Nav.Link>
+
+              {/* <NavDropdown title="Dropdown" id="basic-nav-dropdown">
                             <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
                             <NavDropdown.Item href="#action/3.2">
                                 Another action
@@ -23,10 +27,10 @@ const Header = () => {
                                 Separated link
                             </NavDropdown.Item>
                         </NavDropdown> */}
-                    </Nav>
-                </Navbar.Collapse>
-            </Container>
-        </Navbar>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
     );
 };
 
