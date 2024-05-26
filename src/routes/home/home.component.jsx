@@ -1,73 +1,162 @@
-import { useEffect } from "react";
-import { Container, Row, Col } from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Container, Row, Col, Form } from "react-bootstrap";
 import styles from './home.styles.module.scss';
-import { fetchVenues } from "../../utils/venues/venue.utils";
-import mapPin from '../../assets/images/map-pin.svg';
+import { fetchVenues, searchVenues } from "../../utils/venues/venue.utils";
+import PaginationComponent from "../../components/pagination/pagination.component";
+import VenueComponent from "../../components/venue/venue.component";
+
 
 const Home = () => {
 
-    useEffect(() => {
-        const getVenues = async() => {
-            const venues = await fetchVenues();
-            console.log(venues);
-        }; 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentLimit] = useState(10);
 
-        getVenues();
-    }, []); 
+  const [paginationMeta, setPaginationMeta] = useState(null);
+
+  const [listOfVenues, setListOfVenues] = useState([]);
 
 
+  useEffect(() => {
+    const getVenues = async() => {
+      const venues = await fetchVenues(currentLimit, currentPage);
+      setListOfVenues(venues.data);
+      const data = {
+        currentPage: venues.meta.currentPage,
+        isFirstPage: venues.meta.isFirstPage,
+        isLastPage: venues.meta.isLastPage,
+        nextPage: venues.meta.nextPage,
+        pageCount: venues.meta.pageCount,
+        previousPage: venues.meta.previousPage,
+        totalCount: venues.meta.totalCount
+      };
+      setPaginationMeta(data);
+    }; 
 
-    return (
-      <div className={styles.home}>
-        <Container>
-          <Row>
-            <Col>
-              <div className={styles.venueItemsContainer}>
-                <div className={styles.venueItem}>
-                  <img
-                    src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1980&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                    alt="Venue Image"
-                  />
+    getVenues();
+  }, [currentPage, currentLimit]); 
 
-                  <div className={styles.details}>
-                    <h6>The Picollo Hotel</h6>
-                    <p className={styles.location}>
-                      <img src={mapPin} alt="Location pin" /> Sample location
-                    </p>
-                    <p className={styles.description}>
-                      Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                      Laborum, error? Deleniti fugit, atque consequatur ab
-                      consequuntur non sapiente sit nostrum eaque placeat fugiat
-                      repellat vero, sequi pariatur libero laudantium! Id.
-                    </p>
-                  </div>
+  const handlePageChange = (pageNumber) => {
+  
+    setCurrentPage(pageNumber);
+    setPaginationMeta((prevMeta) => ({
+      ...prevMeta,
+      currentPage: pageNumber,
+      isFirstPage: pageNumber === 1,
+      isLastPage: pageNumber === prevMeta.pageCount,
+      nextPage: pageNumber < prevMeta.pageCount ? pageNumber + 1 : prevMeta.pageCount,
+      previousPage: pageNumber > 1 ? pageNumber - 1 : 1,
+    }));
+  };
 
-                  <div className={styles.extraDetails}>
-                    <div className={styles.reviewContainer}>
-                      <div className={styles.left}>
-                        <p className={styles.rateText}>Very Good</p>
-                        <p className={styles.numReviews}>2,156 Reviews</p>
-                      </div>
-                      <div className={styles.right}>
-                        <span>8.0</span>
-                      </div>
-                    </div>
+  const [inputValue, setInputValue] = useState('');
+  const [debouncedValue, setDebouncedValue] = useState(inputValue);
+  const [typed, setTyped] = useState(false);
 
-                    <div className={styles.pricingReviewContainer}>
-                      <p className={styles.label}>Price from</p>
-                      <p className={styles.price}>NOK 520.75</p>
-                      <p className={styles.label}>per night</p>
-                    </div>
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(inputValue);
+    }, 2000);
 
-                    
-                  </div>
-                </div>
-              </div>
-            </Col>
-          </Row>
-        </Container>
-      </div>
-    );
+    return () => {
+        clearTimeout(handler);
+    };
+  }, [inputValue]); 
+
+  useEffect(() => {
+
+    const callSearch = async() => {
+      if (debouncedValue) {
+        console.log('User stopped typing. Debounced value:', debouncedValue);
+       
+        if(!typed) {
+          setTyped(true);
+        }
+
+        const venues = await searchVenues(currentLimit, currentPage, debouncedValue);
+
+        console.log('searched is ', venues);
+        setListOfVenues(venues.data);
+        const data = {
+          currentPage: venues.meta.currentPage,
+          isFirstPage: venues.meta.isFirstPage,
+          isLastPage: venues.meta.isLastPage,
+          nextPage: venues.meta.nextPage,
+          pageCount: venues.meta.pageCount,
+          previousPage: venues.meta.previousPage,
+          totalCount: venues.meta.totalCount
+        };
+        setPaginationMeta(data);
+        // Place your function or API call here
+      } else {
+        if(typed) {
+          console.log('Empty ', debouncedValue);
+          const venues = await fetchVenues(currentLimit, currentPage);
+          setListOfVenues(venues.data);
+          const data = {
+            currentPage: venues.meta.currentPage,
+            isFirstPage: venues.meta.isFirstPage,
+            isLastPage: venues.meta.isLastPage,
+            nextPage: venues.meta.nextPage,
+            pageCount: venues.meta.pageCount,
+            previousPage: venues.meta.previousPage,
+            totalCount: venues.meta.totalCount
+          };
+          setPaginationMeta(data);
+        }
+      
+      }
+    };
+
+    callSearch();
+   
+  }, [debouncedValue, currentLimit, currentPage, typed]);
+
+  const handleChange = (event) => {
+    setInputValue(event.target.value);
+  };
+
+
+  return (
+    <div className={`${styles.home} mainPage`}>
+      <Container>
+        <Row>
+          <Col>
+
+            <div className={styles.venueItemsContainer}>
+              <h1 className="mb-5">List Of Venues</h1>
+
+              <Form.Group className="mb-3 mt-5" controlId="numGuests">
+                <Form.Label>Search Venues</Form.Label>
+                <Form.Control type="text" name="numGuests" onChange={handleChange} />
+              </Form.Group>
+              {
+                listOfVenues.map((el, index) => {
+                  return(
+                    <VenueComponent key={index} data={el} showView={true} />
+                  )
+                })
+              }
+
+              { paginationMeta && 
+                <PaginationComponent
+                  currentPage={paginationMeta.currentPage}
+                  isFirstPage={paginationMeta.isFirstPage}
+                  isLastPage={paginationMeta.isLastPage}
+                  nextPage={paginationMeta.nextPage}
+                  pageCount={paginationMeta.pageCount}
+                  previousPage={paginationMeta.previousPage}
+                  onPageChange={handlePageChange}
+                />
+              }
+              
+            </div>
+
+          </Col>
+        </Row>
+      </Container>
+    </div>
+  );
+
 };
 
 
