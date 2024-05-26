@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-import { Container, Row, Col, Button, Form, Alert } from "react-bootstrap";
+import { Container, Row, Col, Alert } from "react-bootstrap";
 import styles from './register.styles.module.scss';
 import { Link } from "react-router-dom";
 import { isValidEmail, isValidUrl, combineErrors } from "../../lib/helpers";

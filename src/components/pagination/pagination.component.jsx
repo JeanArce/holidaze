@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Pagination } from "react-bootstrap";
 
 const PaginationComponent = ({ currentPage, isFirstPage, isLastPage, nextPage, pageCount, previousPage, onPageChange }) => {
